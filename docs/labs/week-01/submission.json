@@ -7,5 +7,9 @@
   "pullRequestUrl": "https://github.com/Mackeyth28/engse203-student-labs-68543210050/pull/1",
   "submissionTag": "lab-01-submission-v1",
   "testStatus": "pass",
-  "notes": "รัน hello.js และตรวจ environment แล้ว"
+  "notes": "รัน hello.js และตรวจ environment แล้ว",
+  "pageUrl": "https://Mackeyth28.github.io/engse203-student-labs-68543210050/labs/week-01/",
+  "sourceUrl": "https://github.com/Mackeyth28/engse203-student-labs-68543210050/tree/lab/week-01/labs/week-01/source",
+  "hasPublish": false,
+  "sourceEntries": 4
 }
