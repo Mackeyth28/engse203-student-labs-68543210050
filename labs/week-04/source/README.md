@@ -9,7 +9,7 @@
 ## URLs
 
 - Repository: https://github.com/Mackeyth28/engse203-student-labs-68543210050.git
-- Pull Request: Pending หลังเปิด Pull Request
+- Pull Request: https://github.com/Mackeyth28/engse203-student-labs-68543210050/pull/10
 - GitHub Pages: Pending หลังเผยแพร่ GitHub Pages
 
 ## Component Tree
