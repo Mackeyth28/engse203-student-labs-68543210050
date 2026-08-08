@@ -9,8 +9,8 @@
 ## URLs
 
 - Repository: https://github.com/Mackeyth28/engse203-student-labs-68543210050.git
-- Pull Request: https://github.com/Mackeyth28/engse203-student-labs-68543210050/pull/10
-- GitHub Pages: Pending หลังเผยแพร่ GitHub Pages
+- Pull Request: https://github.com/Mackeyth28/engse203-student-labs-68543210050/pull/11
+- GitHub Pages: https://mackeyth28.github.io/engse203-student-labs-68543210050/
 
 ## Component Tree
 
@@ -64,7 +64,7 @@ App เป็นเจ้าของ requests และ statusFilter เพร�
 | TC-09 375px | หน้าเว็บแสดงได้ที่ความกว้าง 375px โดยไม่มี Horizontal Scroll | Pass | ![alt text](image-8.png) |
 | TC-10 Keyboard | ใช้ Tab เข้าถึงช่องกรอก ตัวกรอง และปุ่มได้ พร้อมเห็น Focus ชัดเจน | Pass | ![alt text](image-11.png) |
 | TC-11 Build/preview | npm run build และ npm run preview ทำงานสำเร็จ | Pass | ![alt text](image-12.png) ![alt text](image-13.png) |
-| TC-12 Pages | รอตรวจหลังเผยแพร่ GitHub Pages | Pending | evidence/pages-incognito.png |
+| TC-12 Pages | รอตรวจหลังเผยแพร่ GitHub Pages | Pass | ![alt text](image-16.png) |
 
 ## Screenshots
 
