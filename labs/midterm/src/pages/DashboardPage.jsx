@@ -54,21 +54,21 @@ function DashboardPage() {
  *
  * รายการต้องผ่านทั้งตัวกรองสถานะและคำค้นหา
  */
-const normalizedSearchTerm = searchTerm.trim().toLowerCase();
+  const normalizedSearchTerm = searchTerm.trim().toLowerCase();
 
-const filteredRequests = requests.filter((request) => {
-  const matchesStatus =
-    statusFilter === 'all' || request.status === statusFilter;
+  const filteredRequests = requests.filter((request) => {
+    const matchesStatus =
+      statusFilter === 'all' || request.status === statusFilter;
 
-  const requesterName = request.requesterName.toLowerCase();
-  const details = request.details.toLowerCase();
+    const requesterName = request.requesterName.toLowerCase();
+    const details = request.details.toLowerCase();
 
-  const matchesSearch =
-    requesterName.includes(normalizedSearchTerm) ||
-    details.includes(normalizedSearchTerm);
+    const matchesSearch =
+      requesterName.includes(normalizedSearchTerm) ||
+      details.includes(normalizedSearchTerm);
 
-  return matchesStatus && matchesSearch;
-});
+    return matchesStatus && matchesSearch;
+  });
 
   function handleRetry() {
     if (scenario) setSearchParams({});
@@ -133,7 +133,17 @@ const filteredRequests = requests.filter((request) => {
               />
             </div>
             {/* TODO B3: เพิ่ม onMarkDone={handleMarkDone} และเขียน handleMarkDone ให้เรียก updateRequestStatus แล้ว setRequests เพื่อให้ summary อัปเดต + รอด refresh */}
-            <RequestList requests={filteredRequests} onDeleteRequest={handleDelete} />
+            {/* CP-B2.4: แสดงข้อความเมื่อค้นหาแล้วไม่พบคำร้อง */}
+            {searchTerm.trim() !== '' && filteredRequests.length === 0 ? (
+              <p className="subtle-empty" role="status">
+                ไม่พบคำร้องที่ตรงกับการค้นหา
+              </p>
+            ) : (
+              <RequestList
+                requests={filteredRequests}
+                onDeleteRequest={handleDelete}
+              />
+            )}
           </section>
         </>
       )}
