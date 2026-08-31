@@ -49,10 +49,18 @@ function DashboardPage() {
     completed: requests.filter((request) => request.status === 'completed').length,
   }), [requests]);
 
-  const filteredRequests = statusFilter === 'all'
-    ? requests
+  // CP-B2.2: กรองตามชื่อผู้แจ้งหรือรายละเอียด
+  const normalizedSearchTerm = searchTerm.trim().toLowerCase();
 
-    : requests.filter((request) => request.status === statusFilter);
+  const filteredRequests = requests.filter((request) => {
+    const requesterName = request.requesterName.toLowerCase();
+    const details = request.details.toLowerCase();
+
+    return (
+      requesterName.includes(normalizedSearchTerm) ||
+      details.includes(normalizedSearchTerm)
+    );
+  });
 
   function handleRetry() {
     if (scenario) setSearchParams({});
