@@ -49,18 +49,26 @@ function DashboardPage() {
     completed: requests.filter((request) => request.status === 'completed').length,
   }), [requests]);
 
-  // CP-B2.2: กรองตามชื่อผู้แจ้งหรือรายละเอียด
-  const normalizedSearchTerm = searchTerm.trim().toLowerCase();
+  /*
+ * CP-B2.3: ค้นหาร่วมกับตัวกรองสถานะ
+ *
+ * รายการต้องผ่านทั้งตัวกรองสถานะและคำค้นหา
+ */
+const normalizedSearchTerm = searchTerm.trim().toLowerCase();
 
-  const filteredRequests = requests.filter((request) => {
-    const requesterName = request.requesterName.toLowerCase();
-    const details = request.details.toLowerCase();
+const filteredRequests = requests.filter((request) => {
+  const matchesStatus =
+    statusFilter === 'all' || request.status === statusFilter;
 
-    return (
-      requesterName.includes(normalizedSearchTerm) ||
-      details.includes(normalizedSearchTerm)
-    );
-  });
+  const requesterName = request.requesterName.toLowerCase();
+  const details = request.details.toLowerCase();
+
+  const matchesSearch =
+    requesterName.includes(normalizedSearchTerm) ||
+    details.includes(normalizedSearchTerm);
+
+  return matchesStatus && matchesSearch;
+});
 
   function handleRetry() {
     if (scenario) setSearchParams({});
