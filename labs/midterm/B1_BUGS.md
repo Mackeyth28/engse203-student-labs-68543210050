@@ -26,16 +26,22 @@
 - แก้อย่างไร:เปลี่ยนตัวดำเนินการจาก `!==` เป็น `===` เพื่อให้เลือกเฉพาะคำร้องที่มีสถานะตรงกับ `statusFilter`  
 
 ## บั๊กที่ 4 — อาการ: เปลี่ยน URL จาก REQ-001 เป็น REQ-002 แล้วข้อมูลไม่เปลี่ยน
-- ไฟล์/บรรทัด:
-- สาเหตุ:
-- แก้อย่างไร:
+- ไฟล์/บรรทัด:ไฟล์/บรรทัด: `src/pages/RequestDetailPage.jsx` บริเวณ `useEffect()` และ Dependency Array
+
+- สาเหตุ:`useEffect()` กำหนด Dependency Array เป็น `[reloadKey]` โดยไม่มี `requestId` เมื่อเปลี่ยน Request ID ใน URL จึงไม่เรียก `getRequestById()` ใหม่ และยังแสดงข้อมูลของคำร้องเดิม
+
+- แก้อย่างไร:เพิ่ม `requestId` เข้า Dependency Array เป็น `[requestId, reloadKey]` พร้อมล้างข้อมูลเดิมก่อนเริ่มโหลดข้อมูลคำร้องใหม่
 
 ## บั๊กที่ 5 — อาการ: กด "ลบ" แล้วรายการยังอยู่ ต้องรีเฟรชถึงหาย
-- ไฟล์/บรรทัด:
-- สาเหตุ:
-- แก้อย่างไร:
+- ไฟล์/บรรทัด:`src/pages/DashboardPage.jsx` ภายในฟังก์ชัน `handleDelete`
+
+- สาเหตุ:หลังจาก `deleteRequest(requestId)` ส่งรายการล่าสุดกลับมาเก็บไว้ใน `nextRequests` โค้ดกลับเรียก `setRequests(requests)` ซึ่งเป็นข้อมูลชุดเดิม ทำให้ State บนหน้า Dashboard ไม่เปลี่ยนและ React ไม่ Render รายการใหม่
+
+- แก้อย่างไร:เปลี่ยนจาก `setRequests(requests)` เป็น `setRequests(nextRequests)` เพื่ออัปเดต State ด้วยรายการล่าสุดที่ไม่มีคำร้องที่ถูกลบแล้ว
 
 ## บั๊กที่ 6 — อาการ: กด "Reset Demo Data" แล้วหน้าพัง/ว่างเปล่า
-- ไฟล์/บรรทัด:
-- สาเหตุ:
-- แก้อย่างไร:
+- ไฟล์/บรรทัด: `src/pages/DashboardPage.jsx` ภายในฟังก์ชัน `handleReset`
+
+- สาเหตุ:โค้ดเรียก `setRequests(resetRequests())` โดยไม่ได้รอผลลัพธ์จากฟังก์ชัน `resetRequests()` ซึ่งเป็นฟังก์ชันแบบ asynchronous ทำให้ค่าที่นำไปเก็บใน State อาจเป็น Promise แทน Array ของคำร้อง
+
+- แก้อย่างไร:ใช้ `await resetRequests()` เพื่อรอรายการคำร้องที่คืนค่าเสร็จแล้ว เก็บผลลัพธ์ไว้ใน `nextRequests` จากนั้นเรียก `setRequests(nextRequests)`
