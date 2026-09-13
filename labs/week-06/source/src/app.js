@@ -37,9 +37,16 @@ export function createApp() {
   app.use('/api/requests', requestRoutes);
 
   /**
-   * TODO W06-A4 (🏠 CP07) · ปิดท้ายด้วย notFound แล้วตามด้วย errorHandler
-   * ⚠ สองตัวนี้ต้องอยู่ท้ายสุด หลัง route ทั้งหมด
-   */
+ * TODO W06-A4 (🏠 CP07) · ปิดท้ายด้วย notFound แล้วตามด้วย errorHandler
+ * ⚠ สองตัวนี้ต้องอยู่ท้ายสุด หลัง route ทั้งหมด
+ */
 
-  return app;
+// จัดการคำขอที่ไม่ตรงกับ Route ใด
+app.use(notFound);
+
+// จัดการ Error ที่หลุดมาจาก Middleware หรือ Route
+app.use(errorHandler);
+
+return app;
+
 }

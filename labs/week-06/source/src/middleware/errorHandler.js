@@ -4,7 +4,13 @@
  * ตอบ 500 พร้อมข้อความที่ผู้ใช้ทั่วไปเข้าใจ (อย่าส่ง stack trace ออกไป)
  */
 export function errorHandler(err, req, res, next) {
-  throw new Error('TODO W06-M3: errorHandler');
+  // บันทึกรายละเอียดไว้ในฝั่ง Server สำหรับตรวจสอบ
+  console.error('เกิดข้อผิดพลาด:', err.message);
+
+  // ส่งข้อความทั่วไปให้ Client โดยไม่เปิดเผย Stack Trace
+  return res.status(500).json({
+    error: 'เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์',
+  });
 }
 
 /**
@@ -12,5 +18,7 @@ export function errorHandler(err, req, res, next) {
  * ตอบ 404 พร้อมบอกว่า path ไหนที่หาไม่เจอ
  */
 export function notFound(req, res) {
-  throw new Error('TODO W06-M4: notFound');
+  return res.status(404).json({
+    error: `ไม่พบเส้นทาง ${req.method} ${req.originalUrl}`,
+  });
 }
