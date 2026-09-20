@@ -54,7 +54,8 @@ export async function addRequest(requestInput) {
  * body: { status }
  */
 export async function updateRequestStatus(requestId, status) {
-  throw new Error('TODO W07-F6: updateRequestStatus');
+  await apiFetch(`/api/requests/${encodeURIComponent(requestId)}`, { method: 'PUT', body: JSON.stringify({ status }) });
+  return getRequestById(requestId); // คืนข้อมูลล่าสุดจากเซิร์ฟเวอร์ เพื่อให้หน้าจอตรงกับข้อมูลจริงเสมอ
 }
 
 /**
@@ -64,10 +65,15 @@ export async function updateRequestStatus(requestId, status) {
  */
 export async function deleteRequest(requestId) {
   await apiFetch(`/api/requests/${encodeURIComponent(requestId)}`, { method: 'DELETE' });
-  return getRequests();   // คืนรายการล่าสุดจากเซิร์ฟเวอร์
+  return getRequests();// คืนรายการล่าสุดจากเซิร์ฟเวอร์ เพื่อให้หน้าจอตรงกับข้อมูลจริงเสมอ
 }
 
 /** Week 07 ยังไม่มี endpoint reset — โหลดรายการปัจจุบันกลับมาแทน */
 export async function resetRequests() {
-  return getRequests();
+  try {
+    return await apiFetch('/api/requests/reset', { method: 'POST' });
+  } catch {
+    const res = await fetch('./data/initialRequests.json');
+    return await res.json();
+  }
 }
