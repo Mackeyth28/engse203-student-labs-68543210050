@@ -17,11 +17,46 @@ export { ApiError };
  *   ใช้ encodeURIComponent() ป้องกันอักขระพิเศษ
  */
 export async function getRequests(options = {}) {
-  if (options.scenario === 'error') throw new ApiError('LAB scenario: จำลองการโหลดไม่สำเร็จ', 500);
-  if (options.scenario === 'empty') return [];
+  if (options.scenario === 'error') {
+    throw new ApiError(
+      'LAB scenario: จำลองการโหลดไม่สำเร็จ',
+      500
+    );
+  }
 
-  const query = options.status ? `?status=${encodeURIComponent(options.status)}` : '';
-  return apiFetch(`/api/requests${query}`);
+  if (options.scenario === 'empty') {
+    return [];
+  }
+
+  const path = `/api/requests${
+    options.status
+      ? `?status=${encodeURIComponent(options.status)}`
+      : ''
+  }`;
+
+  try {
+    return await apiFetch(path);
+  } catch (error) {
+    // GitHub Pages ไม่มี Express API
+    // จึงโหลดข้อมูลตัวอย่างสำหรับหน้า Demo
+    if (window.location.hostname.endsWith('github.io')) {
+      const response = await fetch('./data/initialRequests.json');
+
+      if (response.ok) {
+        const requests = await response.json();
+
+        if (!options.status) {
+          return requests;
+        }
+
+        return requests.filter(
+          (request) => request.status === options.status
+        );
+      }
+    }
+
+    throw error;
+  }
 }
 
 /**
