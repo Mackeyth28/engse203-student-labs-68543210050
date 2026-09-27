@@ -104,5 +104,20 @@
     "sourceUrl": "https://github.com/Mackeyth28/engse203-student-labs-68543210050/tree/lab/week-07/labs/week-07/source",
     "hasPublish": true,
     "sourceEntries": 5
+  },
+  {
+    "week": "week-09",
+    "title": "SQL Fundamentals",
+    "status": "submitted",
+    "originalRepoUrl": "https://github.com/Mackeyth28/engse203-student-labs-68543210050",
+    "originalCommit": "4f4c604b950ab16b2d166bc0e6940d4a857d2c86",
+    "pullRequestUrl": "https://github.com/Mackeyth28/engse203-student-labs-68543210050/pull/22",
+    "submissionTag": "lab-09-submission-v1",
+    "testStatus": "pass",
+    "notes": "ผ่าน Checker 30/30 รายการ",
+    "pageUrl": "https://Mackeyth28.github.io/engse203-student-labs-68543210050/labs/week-09/",
+    "sourceUrl": "https://github.com/Mackeyth28/engse203-student-labs-68543210050/tree/lab/week-09/labs/week-09/source",
+    "hasPublish": false,
+    "sourceEntries": 6
   }
 ]
