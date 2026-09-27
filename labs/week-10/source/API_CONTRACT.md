@@ -187,3 +187,78 @@ cd frontend && npm run dev     # http://localhost:5173
 ```
 
 **ลำดับสำคัญ** — เปิด API ก่อนเสมอ ไม่งั้น frontend จะขึ้นข้อความว่าติดต่อเซิร์ฟเวอร์ไม่ได้
+
+---
+
+## Data Model / ฐานข้อมูล
+
+ระบบใช้ฐานข้อมูล SQLite และจัดเก็บข้อมูลไว้ในไฟล์:
+
+```text
+api/data/campus.db
+```
+
+โครงสร้างฐานข้อมูลกำหนดไว้ใน:
+
+```text
+api/data/schema.sql
+```
+
+### ตาราง users
+
+ตาราง `users` จัดเก็บข้อมูลผู้แจ้งคำร้อง โดยมีคอลัมน์ดังนี้:
+
+- `id` เป็น Primary Key
+- `name` เป็นชื่อผู้แจ้ง
+- `department` เป็นภาควิชาหรือหน่วยงาน
+- `email` เป็นอีเมลที่ห้ามซ้ำ
+
+### ตาราง requests
+
+ตาราง `requests` จัดเก็บข้อมูลคำร้อง โดยมีคอลัมน์ดังนี้:
+
+- `id` เป็น Primary Key
+- `requester_id` เป็น Foreign Key อ้างถึง `users.id`
+- `request_type` เป็นประเภทคำร้อง
+- `location` เป็นสถานที่
+- `details` เป็นรายละเอียด
+- `priority` เป็นระดับความเร่งด่วน
+- `status` เป็นสถานะคำร้อง
+- `created_at` เป็นเวลาที่สร้างคำร้อง
+
+### ความสัมพันธ์ของข้อมูล
+
+ผู้ใช้หนึ่งคนสามารถสร้างคำร้องได้หลายรายการ:
+
+```text
+users (1) → requests (many)
+```
+
+ฐานข้อมูลจัดเก็บ `requester_id` แต่ API ใช้ `JOIN` เพื่อคืนชื่อผู้แจ้งในชื่อ Field `requesterName`
+
+```sql
+SELECT
+  r.id,
+  u.name AS requesterName,
+  r.request_type AS requestType,
+  r.location,
+  r.details,
+  r.priority,
+  r.status,
+  r.created_at AS createdAt
+FROM requests AS r
+JOIN users AS u
+  ON u.id = r.requester_id;
+```
+
+### การป้องกัน SQL Injection
+
+ระบบใช้ Parameterized Query โดยส่งค่าจากผู้ใช้ผ่าน Placeholder `?`
+
+```js
+db.prepare(
+  'SELECT * FROM requests WHERE status = ?'
+).all(status);
+```
+
+จึงไม่ต่อค่าจากผู้ใช้เข้าไปในคำสั่ง SQL โดยตรง

@@ -1,69 +1,63 @@
--- ═══════════════════════════════════════════════════════════
--- Campus Service Request — โครงสร้างฐานข้อมูล
--- ENGSE203 สัปดาห์ที่ 9 · หน่วยที่ 4
---
--- 🏠 TODO W09-SCHEMA (CP23)
--- ไฟล์นี้ต้องรันแล้วสร้างฐานข้อมูลได้ครบทั้งหมดในครั้งเดียว
--- และต้องรันซ้ำได้โดยไม่ error
--- ═══════════════════════════════════════════════════════════
+-- Campus Service Request Database
+-- ENGSE203 Week 09
 
 PRAGMA foreign_keys = ON;
 
--- ลบตารางลูกก่อน เพราะ requests มี Foreign Key ชี้ไป users
+-- ลบตารางลูกก่อนตารางแม่ เพื่อให้รันซ้ำได้
 DROP TABLE IF EXISTS requests;
 DROP TABLE IF EXISTS users;
 
--- สร้างตาราง users
+-- ตารางผู้ใช้งาน
 CREATE TABLE users (
-  id          INTEGER PRIMARY KEY AUTOINCREMENT,
-  name        TEXT NOT NULL,
-  department  TEXT NOT NULL,
-  email       TEXT NOT NULL UNIQUE
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  department TEXT NOT NULL,
+  email TEXT NOT NULL UNIQUE
 );
 
--- สร้างตาราง requests
+-- ตารางคำร้อง
 CREATE TABLE requests (
-  id            TEXT PRIMARY KEY,
-  requester_id  INTEGER NOT NULL,
+  id TEXT PRIMARY KEY,
+  requester_id INTEGER NOT NULL,
 
-  request_type  TEXT NOT NULL
-                CHECK (
-                  request_type IN (
-                    'แจ้งซ่อม',
-                    'บริการบัญชีผู้ใช้',
-                    'ขอใช้อุปกรณ์',
-                    'อื่น ๆ'
-                  )
-                ),
+  request_type TEXT NOT NULL
+    CHECK (
+      request_type IN (
+        'แจ้งซ่อม',
+        'บริการบัญชีผู้ใช้',
+        'ขอใช้อุปกรณ์',
+        'อื่น ๆ'
+      )
+    ),
 
-  location      TEXT NOT NULL,
-  details       TEXT NOT NULL,
+  location TEXT NOT NULL,
+  details TEXT NOT NULL,
 
-  priority      TEXT NOT NULL DEFAULT 'normal'
-                CHECK (
-                  priority IN (
-                    'normal',
-                    'urgent'
-                  )
-                ),
+  priority TEXT NOT NULL DEFAULT 'normal'
+    CHECK (
+      priority IN (
+        'normal',
+        'urgent'
+      )
+    ),
 
-  status        TEXT NOT NULL DEFAULT 'pending'
-                CHECK (
-                  status IN (
-                    'pending',
-                    'in-progress',
-                    'completed'
-                  )
-                ),
+  status TEXT NOT NULL DEFAULT 'pending'
+    CHECK (
+      status IN (
+        'pending',
+        'in-progress',
+        'completed'
+      )
+    ),
 
-  created_at    TEXT NOT NULL
-                DEFAULT (datetime('now', 'localtime')),
+  created_at TEXT NOT NULL
+    DEFAULT (datetime('now', 'localtime')),
 
   FOREIGN KEY (requester_id)
     REFERENCES users(id)
 );
 
--- ต้องเพิ่ม users ก่อน เพราะ requests อ้างอิง users ผ่าน requester_id
+-- ข้อมูลผู้ใช้ตั้งต้น
 INSERT INTO users (
   name,
   department,
@@ -90,7 +84,7 @@ INSERT INTO users (
     'preeya@rmutl.ac.th'
   );
 
--- เพิ่มคำร้องตั้งต้น
+-- ข้อมูลคำร้องตั้งต้น 8 รายการ
 INSERT INTO requests (
   id,
   requester_id,
@@ -144,9 +138,36 @@ INSERT INTO requests (
     'ขอเพิ่มปลั๊กไฟบริเวณโต๊ะอ่านหนังสือ',
     'normal',
     'pending'
+  ),
+  (
+    'REQ-006',
+    2,
+    'แจ้งซ่อม',
+    'ห้องปฏิบัติการ 401',
+    'ไฟในห้องกะพริบตลอดเวลา',
+    'normal',
+    'pending'
+  ),
+  (
+    'REQ-007',
+    3,
+    'ขอใช้อุปกรณ์',
+    'อาคารวิศวกรรมไฟฟ้า',
+    'ขอยืมไมโครโฟนสำหรับกิจกรรม',
+    'urgent',
+    'in-progress'
+  ),
+  (
+    'REQ-008',
+    4,
+    'อื่น ๆ',
+    'ห้องสมุด ชั้น 1',
+    'ขอเพิ่มเก้าอี้บริเวณโต๊ะอ่านหนังสือ',
+    'normal',
+    'completed'
   );
 
--- ตรวจสอบผลหลังสร้างฐานข้อมูล
+-- ตรวจสอบผลลัพธ์
 SELECT COUNT(*) AS userCount
 FROM users;
 
@@ -160,3 +181,7 @@ ORDER BY id;
 SELECT *
 FROM requests
 ORDER BY id;
+
+-- Challenge: เพิ่มความเร็วในการค้นหาคำร้องตามสถานะ
+CREATE INDEX IF NOT EXISTS idx_requests_status
+ON requests(status);

@@ -1,57 +1,350 @@
-import { apiFetch, ApiError } from './apiClient.js';
+import {
+  apiFetch,
+  ApiError,
+} from './apiClient.js';
 
 /**
- * Week 07 — เปลี่ยนจากอ่าน localStorage เป็นเรียก API จริง
+ * Service Layer
  *
- * สังเกตว่า signature ของทุกฟังก์ชันเหมือนเดิมทุกตัว
- * → DashboardPage, RequestDetailPage, NewRequestPage ไม่ต้องแก้เลย
- * นี่คือประโยชน์ของ Service Layer ที่เราสร้างไว้ตั้งแต่ Week 05
+ * Development:
+ *   ใช้ Express API ที่พอร์ต 3001
+ *
+ * Production Preview / GitHub Pages:
+ *   หากติดต่อ API ไม่ได้ จะใช้ข้อมูล Demo จาก
+ *   public/data/initialRequests.json
+ *   และเก็บการเปลี่ยนแปลงใน localStorage
  */
 
 export { ApiError };
 
-export async function getRequests(options = {}) {
-  // scenario ยังใช้ได้เหมือนเดิม เพื่อให้ทดสอบสถานะต่าง ๆ ได้โดยไม่ต้องแกล้ง API
+const DEMO_STORAGE_KEY =
+  'week10-campus-service-requests';
+
+function isProductionBuild() {
+  return import.meta.env.PROD;
+}
+
+function saveDemoRequests(requests) {
+  localStorage.setItem(
+    DEMO_STORAGE_KEY,
+    JSON.stringify(requests)
+  );
+
+  return requests;
+}
+
+async function loadInitialRequests() {
+  const dataUrl = new URL(
+    './data/initialRequests.json',
+    document.baseURI
+  );
+
+  const response = await fetch(dataUrl);
+
+  if (!response.ok) {
+    throw new ApiError(
+      'โหลดข้อมูลตัวอย่างไม่สำเร็จ',
+      response.status
+    );
+  }
+
+  return response.json();
+}
+
+async function getDemoRequests() {
+  const saved = localStorage.getItem(
+    DEMO_STORAGE_KEY
+  );
+
+  if (saved) {
+    try {
+      return JSON.parse(saved);
+    } catch {
+      localStorage.removeItem(
+        DEMO_STORAGE_KEY
+      );
+    }
+  }
+
+  const initialRequests =
+    await loadInitialRequests();
+
+  return saveDemoRequests(
+    initialRequests
+  );
+}
+
+function createDemoRequestId(requests) {
+  const numericIds = requests
+    .map((request) => {
+      const match = /^REQ-(\d+)$/.exec(
+        request.id
+      );
+
+      return match
+        ? Number(match[1])
+        : 0;
+    });
+
+  const nextNumber =
+    Math.max(0, ...numericIds) + 1;
+
+  return `REQ-${String(nextNumber).padStart(
+    3,
+    '0'
+  )}`;
+}
+
+export async function getRequests(
+  options = {}
+) {
   if (options.scenario === 'error') {
-    throw new ApiError('LAB scenario: จำลองการโหลดข้อมูลไม่สำเร็จ', 500);
+    throw new ApiError(
+      'LAB scenario: จำลองการโหลดข้อมูลไม่สำเร็จ',
+      500
+    );
   }
-  if (options.scenario === 'empty') return [];
 
-  const query = options.status ? `?status=${encodeURIComponent(options.status)}` : '';
-  return apiFetch(`/api/requests${query}`);
-}
+  if (options.scenario === 'empty') {
+    return [];
+  }
 
-export async function getRequestById(requestId) {
+  const query = options.status
+    ? `?status=${encodeURIComponent(
+        options.status
+      )}`
+    : '';
+
   try {
-    return await apiFetch(`/api/requests/${encodeURIComponent(requestId)}`);
+    return await apiFetch(
+      `/api/requests${query}`
+    );
   } catch (error) {
-    // 404 ไม่ใช่ความผิดพลาดของระบบ — แปลว่าไม่มีคำร้องรหัสนี้
-    if (error instanceof ApiError && error.status === 404) return null;
-    throw error;
+    if (!isProductionBuild()) {
+      throw error;
+    }
+
+    const requests =
+      await getDemoRequests();
+
+    if (!options.status) {
+      return requests;
+    }
+
+    return requests.filter(
+      (request) =>
+        request.status === options.status
+    );
   }
 }
 
-export async function addRequest(requestInput) {
-  return apiFetch('/api/requests', {
-    method: 'POST',
-    body: JSON.stringify(requestInput),
-  });
+export async function getRequestById(
+  requestId
+) {
+  try {
+    return await apiFetch(
+      `/api/requests/${encodeURIComponent(
+        requestId
+      )}`
+    );
+  } catch (error) {
+    if (
+      error instanceof ApiError &&
+      error.status === 404
+    ) {
+      return null;
+    }
+
+    if (!isProductionBuild()) {
+      throw error;
+    }
+
+    const requests =
+      await getDemoRequests();
+
+    return (
+      requests.find(
+        (request) =>
+          request.id === requestId
+      ) ?? null
+    );
+  }
 }
 
-export async function updateRequestStatus(requestId, status) {
-  return apiFetch(`/api/requests/${encodeURIComponent(requestId)}`, {
-    method: 'PUT',
-    body: JSON.stringify({ status }),
-  });
+export async function addRequest(
+  requestInput
+) {
+  try {
+    return await apiFetch(
+      '/api/requests',
+      {
+        method: 'POST',
+        body: JSON.stringify(
+          requestInput
+        ),
+      }
+    );
+  } catch (error) {
+    if (!isProductionBuild()) {
+      throw error;
+    }
+
+    const requests =
+      await getDemoRequests();
+
+    const createdRequest = {
+      id: createDemoRequestId(
+        requests
+      ),
+      requesterName:
+        requestInput.requesterName,
+      requestType:
+        requestInput.requestType,
+      location:
+        requestInput.location,
+      details:
+        requestInput.details,
+      priority:
+        requestInput.priority ??
+        'normal',
+      status: 'pending',
+      createdAt:
+        new Date().toISOString(),
+    };
+
+    saveDemoRequests([
+      ...requests,
+      createdRequest,
+    ]);
+
+    return createdRequest;
+  }
 }
 
-export async function deleteRequest(requestId) {
-  await apiFetch(`/api/requests/${encodeURIComponent(requestId)}`, { method: 'DELETE' });
-  // คืนรายการล่าสุดจากเซิร์ฟเวอร์ เพื่อให้หน้าจอตรงกับข้อมูลจริงเสมอ
-  return getRequests();
+export async function updateRequestStatus(
+  requestId,
+  status
+) {
+  try {
+    return await apiFetch(
+      `/api/requests/${encodeURIComponent(
+        requestId
+      )}`,
+      {
+        method: 'PUT',
+        body: JSON.stringify({
+          status,
+        }),
+      }
+    );
+  } catch (error) {
+    if (!isProductionBuild()) {
+      throw error;
+    }
+
+    const requests =
+      await getDemoRequests();
+
+    const index = requests.findIndex(
+      (request) =>
+        request.id === requestId
+    );
+
+    if (index === -1) {
+      throw new ApiError(
+        `ไม่พบคำร้องรหัส ${requestId}`,
+        404
+      );
+    }
+
+    const updatedRequest = {
+      ...requests[index],
+      status,
+    };
+
+    const updatedRequests = [
+      ...requests,
+    ];
+
+    updatedRequests[index] =
+      updatedRequest;
+
+    saveDemoRequests(
+      updatedRequests
+    );
+
+    return updatedRequest;
+  }
+}
+
+export async function deleteRequest(
+  requestId
+) {
+  try {
+    await apiFetch(
+      `/api/requests/${encodeURIComponent(
+        requestId
+      )}`,
+      {
+        method: 'DELETE',
+      }
+    );
+
+    return getRequests();
+  } catch (error) {
+    if (!isProductionBuild()) {
+      throw error;
+    }
+
+    const requests =
+      await getDemoRequests();
+
+    const found = requests.some(
+      (request) =>
+        request.id === requestId
+    );
+
+    if (!found) {
+      throw new ApiError(
+        `ไม่พบคำร้องรหัส ${requestId}`,
+        404
+      );
+    }
+
+    const remainingRequests =
+      requests.filter(
+        (request) =>
+          request.id !== requestId
+      );
+
+    return saveDemoRequests(
+      remainingRequests
+    );
+  }
 }
 
 export async function resetRequests() {
-  // Week 07 ยังไม่มี endpoint reset — โหลดรายการปัจจุบันกลับมาแทน
-  return getRequests();
+  try {
+    return await apiFetch(
+      '/api/requests/reset',
+      {
+        method: 'POST',
+      }
+    );
+  } catch (error) {
+    if (!isProductionBuild()) {
+      return getRequests();
+    }
+
+    localStorage.removeItem(
+      DEMO_STORAGE_KEY
+    );
+
+    const initialRequests =
+      await loadInitialRequests();
+
+    return saveDemoRequests(
+      initialRequests
+    );
+  }
 }

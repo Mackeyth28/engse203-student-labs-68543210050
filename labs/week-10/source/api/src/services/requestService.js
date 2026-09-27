@@ -7,7 +7,7 @@ import { DatabaseSync } from 'node:sqlite';
  * Week 10
  * Service Layer ที่อ่านและเขียนข้อมูลจาก SQLite
  *
- * ชื่อและ Signature ของฟังก์ชันยังเหมือน Week 07
+ * ชื่อและ Signature ของฟังก์ชันเดิมยังเหมือน Week 07
  * เพื่อให้ Controller และ Frontend ใช้งานต่อได้โดยไม่ต้องแก้
  */
 
@@ -32,8 +32,8 @@ let db;
 /**
  * เปิดฐานข้อมูลและเตรียมตาราง
  *
- * ถ้ายังไม่มีตาราง requests ระบบจะสร้างตารางและข้อมูลตั้งต้น
- * จาก schema.sql
+ * ถ้ายังไม่มีตาราง requests ระบบจะสร้างตาราง
+ * และข้อมูลตั้งต้นจาก schema.sql
  */
 export async function loadSeed() {
   if (db) {
@@ -42,7 +42,7 @@ export async function loadSeed() {
 
   db = new DatabaseSync(DB_FILE);
 
-  // SQLite ต้องเปิด Foreign Key ทุกครั้งที่เปิด Connection ใหม่
+  // SQLite ต้องเปิด Foreign Key ทุกครั้งที่เปิด Connection
   db.exec('PRAGMA foreign_keys = ON');
 
   const table = db
@@ -62,10 +62,16 @@ export async function loadSeed() {
 
     db.exec(schema);
 
-    // schema.sql อาจมี PRAGMA อยู่แล้ว
-    // แต่ยืนยันอีกครั้งว่า Connection นี้เปิด Foreign Key
+    // ยืนยันอีกครั้งหลังสร้างฐานข้อมูล
     db.exec('PRAGMA foreign_keys = ON');
   }
+
+  // Challenge: Index สำหรับการค้นหาตาม status
+  // ใช้ IF NOT EXISTS เพื่อให้รันซ้ำได้
+  db.exec(`
+    CREATE INDEX IF NOT EXISTS idx_requests_status
+    ON requests(status)
+  `);
 }
 
 /**
@@ -173,6 +179,7 @@ function createRequestId() {
  */
 function createPlaceholderEmail() {
   const time = Date.now().toString(36);
+
   const random = Math.random()
     .toString(36)
     .slice(2, 8);
@@ -181,75 +188,86 @@ function createPlaceholderEmail() {
 }
 
 /**
- * เพิ่มคำร้องใหม่
+ * เพิ่มคำร้องใหม่ด้วย Transaction
  *
  * Frontend ส่ง requesterName มา
  * แต่ฐานข้อมูลเก็บ requester_id
  *
  * ขั้นตอน:
- * 1. ค้นหาผู้ใช้จากชื่อ
- * 2. หากไม่พบ ให้สร้างผู้ใช้ใหม่
- * 3. สร้างคำร้องโดยใช้ requester_id
- * 4. คืนข้อมูลในรูปแบบที่ Frontend ใช้
+ * 1. เริ่ม Transaction
+ * 2. ค้นหาผู้ใช้จากชื่อ
+ * 3. หากไม่พบ ให้สร้างผู้ใช้ใหม่
+ * 4. สร้างคำร้องด้วย requester_id
+ * 5. Commit หากทุกอย่างสำเร็จ
+ * 6. Rollback หากมีข้อผิดพลาด
  */
 export function create(input) {
-  const requesterName = input.requesterName.trim();
+  db.exec('BEGIN TRANSACTION');
 
-  let user = db
-    .prepare(`
-      SELECT
-        id,
-        name
-      FROM users
-      WHERE name = ?
-    `)
-    .get(requesterName);
+  try {
+    const requesterName = input.requesterName.trim();
 
-  if (!user) {
-    const result = db
+    let user = db
       .prepare(`
-        INSERT INTO users (
-          name,
-          department,
-          email
-        )
-        VALUES (?, ?, ?)
+        SELECT
+          id,
+          name
+        FROM users
+        WHERE name = ?
       `)
-      .run(
-        requesterName,
-        'ไม่ระบุ',
-        createPlaceholderEmail()
-      );
+      .get(requesterName);
 
-    user = {
-      id: Number(result.lastInsertRowid),
-      name: requesterName,
-    };
-  }
+    if (!user) {
+      const result = db
+        .prepare(`
+          INSERT INTO users (
+            name,
+            department,
+            email
+          )
+          VALUES (?, ?, ?)
+        `)
+        .run(
+          requesterName,
+          'ไม่ระบุ',
+          createPlaceholderEmail()
+        );
 
-  const id = createRequestId();
+      user = {
+        id: Number(result.lastInsertRowid),
+        name: requesterName,
+      };
+    }
 
-  db.prepare(`
-    INSERT INTO requests (
+    const id = createRequestId();
+
+    db.prepare(`
+      INSERT INTO requests (
+        id,
+        requester_id,
+        request_type,
+        location,
+        details,
+        priority,
+        status
+      )
+      VALUES (?, ?, ?, ?, ?, ?, 'pending')
+    `).run(
       id,
-      requester_id,
-      request_type,
-      location,
-      details,
-      priority,
-      status
-    )
-    VALUES (?, ?, ?, ?, ?, ?, 'pending')
-  `).run(
-    id,
-    user.id,
-    input.requestType,
-    input.location.trim(),
-    input.details.trim(),
-    input.priority
-  );
+      user.id,
+      input.requestType,
+      input.location.trim(),
+      input.details.trim(),
+      input.priority
+    );
 
-  return findById(id);
+    db.exec('COMMIT');
+
+    return findById(id);
+  } catch (error) {
+    db.exec('ROLLBACK');
+    throw error;
+  }
 }
 
 /**
@@ -290,4 +308,32 @@ export function remove(id) {
   return result.changes > 0
     ? true
     : null;
+}
+
+/**
+ * Challenge: คืนรายการผู้ใช้ทั้งหมด
+ *
+ * LEFT JOIN ทำให้ผู้ใช้ที่ยังไม่มีคำร้อง
+ * ยังคงปรากฏในผลลัพธ์
+ */
+export function findAllUsers() {
+  return db
+    .prepare(`
+      SELECT
+        u.id,
+        u.name,
+        u.department,
+        u.email,
+        COUNT(r.id) AS requestCount
+      FROM users AS u
+      LEFT JOIN requests AS r
+        ON r.requester_id = u.id
+      GROUP BY
+        u.id,
+        u.name,
+        u.department,
+        u.email
+      ORDER BY u.id
+    `)
+    .all();
 }
