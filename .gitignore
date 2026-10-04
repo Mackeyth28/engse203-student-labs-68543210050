@@ -10,3 +10,5 @@ Thumbs.db
 # docs/ เป็นผล build สำหรับ GitHub Pages และต้อง commit
 !docs/
 !docs/**
+
+!labs/week-11/source/frontend/.env.production

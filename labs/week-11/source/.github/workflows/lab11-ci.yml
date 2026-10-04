@@ -1,0 +1,65 @@
+name: LAB 11 CI
+
+on:
+  push:
+    branches:
+      - lab/week-11
+      - main
+    paths:
+      - "labs/week-11/**"
+      - ".github/workflows/lab11-ci.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "labs/week-11/**"
+      - ".github/workflows/lab11-ci.yml"
+  workflow_dispatch:
+
+jobs:
+  verify-lab11:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: labs/week-11/source
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Install root dependencies
+        run: npm install
+
+      - name: Install API dependencies
+        run: npm install --prefix api
+
+      - name: Install frontend dependencies
+        run: npm install --include=dev --prefix frontend
+
+      - name: Build production frontend
+        env:
+          NODE_ENV: production
+        run: npm run build
+
+      - name: Verify production bundle
+        shell: bash
+        run: |
+          if grep -R "localhost:3001" frontend/dist/assets/*.js; then
+            echo "Production bundle contains localhost:3001"
+            exit 1
+          fi
+
+      - name: Run LAB 11 checker
+        run: node --disable-warning=ExperimentalWarning check-week11.mjs
+
+      - name: Run LAB 10 regression checker
+        run: node --disable-warning=ExperimentalWarning check-week10.mjs
+
+      - name: Run Week 07 regression checker
+        run: node --disable-warning=ExperimentalWarning check-week07.mjs
