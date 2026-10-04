@@ -1,0 +1,74 @@
+[
+  {
+    "id": "REQ-001",
+    "requesterName": "สมชาย ใจดี",
+    "requestType": "แจ้งซ่อม",
+    "location": "ห้องปฏิบัติการ 301",
+    "details": "เครื่องปรับอากาศไม่ทำงานตั้งแต่เช้า",
+    "priority": "urgent",
+    "status": "pending"
+  },
+  {
+    "id": "REQ-002",
+    "requesterName": "สุภาวดี รักเรียน",
+    "requestType": "บริการบัญชีผู้ใช้",
+    "location": "อาคารวิศวกรรม",
+    "details": "เข้าสู่ระบบห้องปฏิบัติการไม่ได้",
+    "priority": "normal",
+    "status": "in-progress"
+  },
+  {
+    "id": "REQ-003",
+    "requesterName": "ธนกฤต ตั้งใจ",
+    "requestType": "ขอใช้อุปกรณ์",
+    "location": "ห้องประชุม 2",
+    "details": "ขอยืมโปรเจกเตอร์",
+    "priority": "normal",
+    "status": "completed"
+  },
+  {
+    "id": "REQ-004",
+    "requesterName": "สมชาย ใจดี",
+    "requestType": "แจ้งซ่อม",
+    "location": "ห้องปฏิบัติการ 302",
+    "details": "คอมพิวเตอร์เครื่องที่ 5 เปิดไม่ติด",
+    "priority": "urgent",
+    "status": "pending"
+  },
+  {
+    "id": "REQ-005",
+    "requesterName": "ปรียา ขยันยิ่ง",
+    "requestType": "อื่น ๆ",
+    "location": "ห้องสมุด ชั้น 2",
+    "details": "ขอเพิ่มปลั๊กไฟบริเวณโต๊ะอ่านหนังสือ",
+    "priority": "normal",
+    "status": "pending"
+  },
+  {
+    "id": "REQ-006",
+    "requesterName": "สุภาวดี รักเรียน",
+    "requestType": "แจ้งซ่อม",
+    "location": "ห้องปฏิบัติการ 401",
+    "details": "ไฟในห้องกะพริบตลอดเวลา",
+    "priority": "normal",
+    "status": "pending"
+  },
+  {
+    "id": "REQ-007",
+    "requesterName": "ธนกฤต ตั้งใจ",
+    "requestType": "ขอใช้อุปกรณ์",
+    "location": "อาคารวิศวกรรมไฟฟ้า",
+    "details": "ขอยืมไมโครโฟนสำหรับกิจกรรม",
+    "priority": "urgent",
+    "status": "in-progress"
+  },
+  {
+    "id": "REQ-008",
+    "requesterName": "ปรียา ขยันยิ่ง",
+    "requestType": "อื่น ๆ",
+    "location": "ห้องสมุด ชั้น 1",
+    "details": "ขอเพิ่มเก้าอี้บริเวณโต๊ะอ่านหนังสือ",
+    "priority": "normal",
+    "status": "completed"
+  }
+]
