@@ -6,13 +6,11 @@ import {
 /**
  * Service Layer
  *
- * Development:
- *   ใช้ Express API ที่พอร์ต 3001
+ * Development และ Production Server:
+ *   ใช้ Express API และฐานข้อมูลจริง
  *
- * Production Preview / GitHub Pages:
- *   หากติดต่อ API ไม่ได้ จะใช้ข้อมูล Demo จาก
- *   public/data/initialRequests.json
- *   และเก็บการเปลี่ยนแปลงใน localStorage
+ * Static Demo เช่น GitHub Pages:
+ *   ใช้ initialRequests.json และ localStorage
  */
 
 export { ApiError };
@@ -20,8 +18,18 @@ export { ApiError };
 const DEMO_STORAGE_KEY =
   'week10-campus-service-requests';
 
-function isProductionBuild() {
-  return import.meta.env.PROD;
+/**
+ * ใช้ Demo Mode เฉพาะ Static Hosting
+ *
+ * localhost และ Render ต้องเรียก API จริง
+ */
+function isStaticDemoHost() {
+  return (
+    window.location.hostname.endsWith(
+      'github.io'
+    ) ||
+    window.location.protocol === 'file:'
+  );
 }
 
 function saveDemoRequests(requests) {
@@ -75,8 +83,8 @@ async function getDemoRequests() {
 }
 
 function createDemoRequestId(requests) {
-  const numericIds = requests
-    .map((request) => {
+  const numericIds = requests.map(
+    (request) => {
       const match = /^REQ-(\d+)$/.exec(
         request.id
       );
@@ -84,15 +92,15 @@ function createDemoRequestId(requests) {
       return match
         ? Number(match[1])
         : 0;
-    });
+    }
+  );
 
   const nextNumber =
     Math.max(0, ...numericIds) + 1;
 
-  return `REQ-${String(nextNumber).padStart(
-    3,
-    '0'
-  )}`;
+  return `REQ-${String(
+    nextNumber
+  ).padStart(3, '0')}`;
 }
 
 export async function getRequests(
@@ -120,7 +128,7 @@ export async function getRequests(
       `/api/requests${query}`
     );
   } catch (error) {
-    if (!isProductionBuild()) {
+    if (!isStaticDemoHost()) {
       throw error;
     }
 
@@ -148,6 +156,18 @@ export async function getRequestById(
       )}`
     );
   } catch (error) {
+    if (isStaticDemoHost()) {
+      const requests =
+        await getDemoRequests();
+
+      return (
+        requests.find(
+          (request) =>
+            request.id === requestId
+        ) ?? null
+      );
+    }
+
     if (
       error instanceof ApiError &&
       error.status === 404
@@ -155,19 +175,7 @@ export async function getRequestById(
       return null;
     }
 
-    if (!isProductionBuild()) {
-      throw error;
-    }
-
-    const requests =
-      await getDemoRequests();
-
-    return (
-      requests.find(
-        (request) =>
-          request.id === requestId
-      ) ?? null
-    );
+    throw error;
   }
 }
 
@@ -185,7 +193,7 @@ export async function addRequest(
       }
     );
   } catch (error) {
-    if (!isProductionBuild()) {
+    if (!isStaticDemoHost()) {
       throw error;
     }
 
@@ -196,18 +204,25 @@ export async function addRequest(
       id: createDemoRequestId(
         requests
       ),
+
       requesterName:
         requestInput.requesterName,
+
       requestType:
         requestInput.requestType,
+
       location:
         requestInput.location,
+
       details:
         requestInput.details,
+
       priority:
         requestInput.priority ??
         'normal',
+
       status: 'pending',
+
       createdAt:
         new Date().toISOString(),
     };
@@ -238,7 +253,7 @@ export async function updateRequestStatus(
       }
     );
   } catch (error) {
-    if (!isProductionBuild()) {
+    if (!isStaticDemoHost()) {
       throw error;
     }
 
@@ -292,7 +307,7 @@ export async function deleteRequest(
 
     return getRequests();
   } catch (error) {
-    if (!isProductionBuild()) {
+    if (!isStaticDemoHost()) {
       throw error;
     }
 
@@ -324,18 +339,7 @@ export async function deleteRequest(
 }
 
 export async function resetRequests() {
-  try {
-    return await apiFetch(
-      '/api/requests/reset',
-      {
-        method: 'POST',
-      }
-    );
-  } catch (error) {
-    if (!isProductionBuild()) {
-      return getRequests();
-    }
-
+  if (isStaticDemoHost()) {
     localStorage.removeItem(
       DEMO_STORAGE_KEY
     );
@@ -347,4 +351,8 @@ export async function resetRequests() {
       initialRequests
     );
   }
+
+  // API ปัจจุบันยังไม่มี Reset Endpoint
+  // จึงโหลดรายการปัจจุบันจากฐานข้อมูลกลับมา
+  return getRequests();
 }

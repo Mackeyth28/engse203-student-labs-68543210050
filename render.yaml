@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: engse203-student-labs-68543210050
+    runtime: node
+    plan: free
+    region: singapore
+    branch: lab/week-11
+    rootDir: labs/week-11/source
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: 24.21.0
+      - key: DB_FILE
+        value: ./api/data/campus.db
+      - key: CORS_ORIGIN
+        value: "*"
