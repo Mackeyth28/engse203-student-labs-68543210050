@@ -1,11 +1,11 @@
 {
   "week": "week-12",
   "title": "Testing and Debugging",
-  "status": "draft",
-  "originalRepoUrl": "",
-  "originalCommit": "",
+  "status": "submitted",
+  "originalRepoUrl": "https://github.com/Mackeyth28/engse203-student-labs-68543210050",
+  "originalCommit": "2407ec3ebc2911df47bd217",
   "pullRequestUrl": "",
-  "submissionTag": "",
-  "testStatus": "not-tested",
+  "submissionTag": "lab-12-submission-v1",
+  "testStatus": "pass",
   "notes": ""
 }
