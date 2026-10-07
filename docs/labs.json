@@ -155,14 +155,14 @@
     "title": "Testing and Debugging",
     "status": "submitted",
     "originalRepoUrl": "https://github.com/Mackeyth28/engse203-student-labs-68543210050",
-    "originalCommit": "377e1441038fcbbb7854ff9a6c462c3f4f3d3341",
-    "pullRequestUrl": "https://github.com/Mackeyth28/engse203-student-labs-68543210050/pull/26",
+    "originalCommit": "4c3d07dccbf0b38e8cb6022a548f5090a10843c6",
+    "pullRequestUrl": "https://github.com/Mackeyth28/engse203-student-labs-68543210050/pull/27",
     "submissionTag": "lab-12-submission-v1",
     "testStatus": "pass",
     "notes": "",
     "pageUrl": "https://Mackeyth28.github.io/engse203-student-labs-68543210050/labs/week-12/",
     "sourceUrl": "https://github.com/Mackeyth28/engse203-student-labs-68543210050/tree/lab/week-12/labs/week-12/source",
-    "hasPublish": false,
+    "hasPublish": true,
     "sourceEntries": 17
   }
 ]
